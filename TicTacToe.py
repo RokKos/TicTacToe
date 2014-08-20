@@ -1,11 +1,11 @@
 from Tkinter import Frame, Canvas, Label, Button, LEFT,RIGHT, ALL, Tk
-from random import randint
+import random
 from PIL import Image, ImageTk
 
 
 #tko delas z fotografijami
-image = Image.open("lenna.jpg")
-photo = ImageTk.PhotoImage(image)
+#image = Image.open("lenna.jpg")
+#photo = ImageTk.PhotoImage(image)
 
 class main:
 
@@ -18,11 +18,12 @@ class main:
 		self.canvas.pack(fill = 'both', expand = True)
 		self.framepod = Frame(self.frame)#sub frame
 		self.framepod.pack(fill = 'both', expand = True)
-		self.Single = Button(self.framepod, text = 'Start single player', height = 4, command = self.startsingle, bg = 'white', fg = 'blue')
+		self.Single = Button(self.framepod, text = 'Start single player', height = 4, command = AI().startsingle, bg = 'white', fg = 'blue')
 		self.Single.pack(fill='both', expand = True, side=RIGHT)
-		self.Multi = Button(self.framepod, text = 'Start double player', height = 4, command = self.clean, bg = 'white', fg = 'blue')
+		self.Multi = Button(self.framepod, text = 'Start double player', height = 4, command = self.double, bg = 'white', fg = 'blue')
 		self.Multi.pack(fill='both', expand = True, side=RIGHT)
 		self.draw()
+
 
 	#def startmulti(self):
 		#self.clean()
@@ -31,7 +32,8 @@ class main:
 	def startsingle(self):
 		pass
 
-	def clean(self): #cleans the all simbols from canvas
+	def double(self): 
+		#cleans the all simbols from canvas
 		self.canvas.delete(ALL)
 		self.label['text'] = ('Tic Tac Toe Game')
 		self.canvas.bind("<ButtonPress-1>", self.place)
@@ -124,6 +126,144 @@ class main:
 	def end(self):
 		self.canvas.unbind("<ButtonPress-1>")
 		self.e=True
+#===========================================================================
+#AI --> MiniMax algorithm and alphabeta puring
+class AI(object):
+    winning_combos = ([0, 1, 2], [3, 4, 5], [6, 7, 8],[0, 3, 6], [1, 4, 7], [2, 5, 8],[0, 4, 8], [2, 4, 6])
+
+    #winners = ('X-win', 'Draw', 'O-win')
+    def __init__(self, squares = []):
+		if len(squares) == 0:
+			self.squares = [None for i in range(9)]
+		else:
+			self.squares = squares
+
+    def available_moves(self):
+		#empty spots
+		return [k for k, v in enumerate(self.squares) if v is None]
+
+    def available_combos(self, player):
+		return self.available_moves() + self.get_squares(player)
+
+    def complete(self):
+		#Game over?
+		if None not in [v for v in self.squares]:
+			return True
+		if self.winner() != None:
+			return True
+		return False
+
+	#using in algorihm to easy check who winsd
+    def X_won(self):
+	    return self.winner() == 'X'
+
+    def O_won(self):
+    	return self.winner() == 'O'
+
+    def tied(self):
+        return self.complete() == True and self.winner() is None
+    
+    def winner(self):
+		for player in ('X', 'O'):
+			positions = self.get_squares(player) #all squares
+			for combo in winning_combos: #single combo
+				win = True
+				for pos in combo: #single piece of combo
+					if pos not in positions: 
+						win = False
+				if win: 
+					return player
+		return None
+	
+    def get_squares(self, player):
+		return [k for k, v in enumerate(self.squares) if v == player]
+
+    def make_move(self,position, player):
+		self.squares[position] = player
+
+    def get_enemy(player):
+    	if player == 'X':
+        	return 'O'
+    	return 'X'
+	
+	#Algorithm------------------------------------------------------------------
+    def alphabeta(self, node, player, alpha, beta):
+		if node.complete():
+			if node.X_won():
+				return -1
+			if node.O_won():
+				return +1
+			if node.tied():
+				return 0 
+		for move in node.available_moves():
+			node.make_move(move, player)
+			val = self.alphabeta(node, get_enemy(player), alpha, beta)
+			node.make_move(move, None)
+			if player == 'O':
+				alpha = max(alpha,val)
+				if alpha >= beta:
+					return beta
+			else:
+				beta = min(beta, val)
+				if beta	<= aplha:
+					return alpha
+		if player == 'O':
+			return alpha
+		else:
+			return beta
+
+    def determine(board, player):
+		a = -2
+		choices = []
+		if len(board.available_moves()) == 9:
+			return 4
+		for move in board.available_moves():
+			board.make_move(move,player)
+			val = board.alphabeta(board,get_enemy(player), -2,2)
+			board.make_move(move,None)
+			if val > a:
+				a = val
+				choices = [move]
+			elif val == a:
+				choices.append(move)
+		return random.choice(choices)
+
+    def startsingle(self):
+    	main(root).label['text'] = ('tttthere')
+     	main(root).canvas.delete(ALL)
+        main(root).label['text'] = ('Tic Tac Toe Game')
+        main(root).draw()
+        main(root).canvas.bind("<ButtonPress-1>", self.place1)
+
+    def place1(self, event):
+    	main(root).label['text'] = ('here')
+    	for i in range(0,900,300):
+			for j in range(0,900,300):
+				if event.x in range(i,i+300) and event.y in range(j, j+300):
+					if self.canvas.find_enclosed(i,j,i+300, j+300) == ():
+						x=(2*i+300)/2
+						y=(2*j+300)/2
+						x2=int(i/300)
+						y2=int(j/300)
+						self.canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
+						self.canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
+
+						player = 'X'
+						player_move = x + 3*y #spremeni
+						board.make_move(player_move, player)
+						player = get_enemy(player)
+
+						computer_move = determine(board, player)
+						board.make_move(computer_move, player)
+
+						ti = computer_move % 3
+						tj = computer_move / 3
+
+						x=(2*ti+300)/2
+						y=(2*tj+300)/2
+						self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+
+board = AI()
 
 
 root = Tk()
