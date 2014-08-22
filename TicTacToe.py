@@ -9,8 +9,24 @@ from PIL import Image, ImageTk
 
 class main:
 
-	def __init__ (self, master):
-		self.frame = Frame(master) #main frame
+	def __init__ (self):
+		self.app = Tk()
+		self.app.title('Tic Tac Toe')
+		#self.app.resizable(width=False, height=False)
+		#width and hight of window
+		w = 900
+		h = 1100
+		#width and hight of screen
+		ws = self.app.winfo_screenwidth()
+		hs = self.app.winfo_screenheight()
+		#calculate position
+		x = ws/2 - w/2
+		y = hs/2 - h/2
+		#place window -> pramaters(visina, dolzina, pozicija x, pozicija y)
+		self.app.geometry("%dx%d+%d+%d" % (w,h, x, y))
+
+		#======================================
+		self.frame = Frame() #main frame
 		self.frame.pack(fill = 'both', expand = True)
 		self.label = Label(self.frame, text	= 'Tic Tac Toe', height = 6, bg = 'white', fg = 'blue')
 		self.label.pack(fill='both', expand = True)
@@ -18,19 +34,12 @@ class main:
 		self.canvas.pack(fill = 'both', expand = True)
 		self.framepod = Frame(self.frame)#sub frame
 		self.framepod.pack(fill = 'both', expand = True)
-		self.Single = Button(self.framepod, text = 'Start single player', height = 4, command = AI().startsingle, bg = 'white', fg = 'blue')
+		self.Single = Button(self.framepod, text = 'Start single player', height = 4, command = self.startsingle, bg = 'white', fg = 'blue')
 		self.Single.pack(fill='both', expand = True, side=RIGHT)
 		self.Multi = Button(self.framepod, text = 'Start double player', height = 4, command = self.double, bg = 'white', fg = 'blue')
 		self.Multi.pack(fill='both', expand = True, side=RIGHT)
+		self.board = AI()
 		self.draw()
-
-
-	#def startmulti(self):
-		#self.clean()
-		#self.draw()
-
-	def startsingle(self):
-		pass
 
 	def double(self): 
 		#cleans the all simbols from canvas
@@ -73,6 +82,45 @@ class main:
 							self.c+=1
 		self.check() 
 
+
+	def startsingle(self):
+		self.canvas.delete(ALL)
+		self.label['text'] = ('Tic Tac Toe Game')
+		self.canvas.bind("<ButtonPress-1>", self.placeone)
+		self.draw()
+
+	def placeone(self, event):
+		for i in range(0,900,300):
+			for j in range(0,900,300):
+				if event.x in range(i,i+300) and event.y in range(j, j+300):
+					if self.canvas.find_enclosed(i,j,i+300, j+300) == ():
+						x=(2*i+300)/2
+						y=(2*j+300)/2
+						x2=int(i/300)
+						y2=int(j/300)
+						self.canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
+						self.canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
+
+						player = 'X'
+						player_move = x2 + 3*y2 #spremeni
+						self.board.make_move(player_move, player)
+						player = 'O'#self.board.get_enemy(player)
+
+						computer_move = self.board.determine(self.board, player)
+						self.board.make_move(computer_move, player)
+
+						ti = computer_move % 3
+						tj = computer_move / 3
+
+						x=(2*ti+300)/2
+						y=(2*tj+300)/2
+						self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+		if self.board.complete():
+			self.label['text'] = (self.board.winner())
+			self.canvas.unbind("ButtonPress-1")
+			self.board = AI()
+
+ 
 
 	def check(self):
 		#checks for win
@@ -126,6 +174,9 @@ class main:
 	def end(self):
 		self.canvas.unbind("<ButtonPress-1>")
 		self.e=True
+
+	def mainloop(self):
+		self.app.mainloop()
 #===========================================================================
 #AI --> MiniMax algorithm and alphabeta puring
 class AI(object):
@@ -166,7 +217,7 @@ class AI(object):
     def winner(self):
 		for player in ('X', 'O'):
 			positions = self.get_squares(player) #all squares
-			for combo in winning_combos: #single combo
+			for combo in self.winning_combos: #single combo
 				win = True
 				for pos in combo: #single piece of combo
 					if pos not in positions: 
@@ -181,7 +232,7 @@ class AI(object):
     def make_move(self,position, player):
 		self.squares[position] = player
 
-    def get_enemy(player):
+    def get_enemy(self,player):
     	if player == 'X':
         	return 'O'
     	return 'X'
@@ -197,7 +248,7 @@ class AI(object):
 				return 0 
 		for move in node.available_moves():
 			node.make_move(move, player)
-			val = self.alphabeta(node, get_enemy(player), alpha, beta)
+			val = self.alphabeta(node, self.get_enemy(player), alpha, beta)
 			node.make_move(move, None)
 			if player == 'O':
 				alpha = max(alpha,val)
@@ -205,33 +256,33 @@ class AI(object):
 					return beta
 			else:
 				beta = min(beta, val)
-				if beta	<= aplha:
+				if beta	<= alpha:
 					return alpha
 		if player == 'O':
 			return alpha
 		else:
 			return beta
 
-    def determine(board, player):
+    def determine(self,board, player):
 		a = -2
 		choices = []
-		if len(board.available_moves()) == 9:
+		if len(self.available_moves()) == 9:
 			return 4
-		for move in board.available_moves():
-			board.make_move(move,player)
-			val = board.alphabeta(board,get_enemy(player), -2,2)
-			board.make_move(move,None)
+		for move in self.available_moves():
+			self.make_move(move,player)
+			val = self.alphabeta(board,self.get_enemy(player), -2,2)
+			self.make_move(move,None)
 			if val > a:
 				a = val
 				choices = [move]
 			elif val == a:
 				choices.append(move)
 		return random.choice(choices)
-
-    def startsingle(self):
+		
+    '''def startsingle(self):
     	main(root).label['text'] = ('tttthere')
      	main(root).canvas.delete(ALL)
-        main(root).label['text'] = ('Tic Tac Toe Game')
+        #main(root).label['text'] = ('Tic Tac Toe Game')
         main(root).draw()
         main(root).canvas.bind("<ButtonPress-1>", self.place1)
 
@@ -240,13 +291,13 @@ class AI(object):
     	for i in range(0,900,300):
 			for j in range(0,900,300):
 				if event.x in range(i,i+300) and event.y in range(j, j+300):
-					if self.canvas.find_enclosed(i,j,i+300, j+300) == ():
+					if main(root).canvas.find_enclosed(i,j,i+300, j+300) == ():
 						x=(2*i+300)/2
 						y=(2*j+300)/2
 						x2=int(i/300)
 						y2=int(j/300)
-						self.canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
-						self.canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
+						main(root).canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
+						main(root).canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
 
 						player = 'X'
 						player_move = x + 3*y #spremeni
@@ -261,25 +312,17 @@ class AI(object):
 
 						x=(2*ti+300)/2
 						y=(2*tj+300)/2
-						self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+						main(root).canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+	'''
+#board = AI()-------------------------
 
-board = AI()
 
-
-root = Tk()
+'''root = Tk()
 root.title('Tic Tac Toe')
-app = main(root)		
+app = main(root)'''		
 
-#width and hight of window
-w = 900
-h = 1100
-#width and hight of screen
-ws = root.winfo_screenwidth()
-hs = root.winfo_screenheight()
-#calculate position
-x = ws/2 - w/2
-y = hs/2 - h/2
-#place window -> pramaters(visina, dolzina, pozicija x, pozicija y)
-root.geometry("%dx%d+%d+%d" % (w,h, x, y))
 
-root.mainloop()
+
+ 
+if __name__ == '__main__':
+  main().mainloop()
