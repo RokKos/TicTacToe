@@ -2,15 +2,23 @@ from Tkinter import Frame, Canvas, Label, Button, LEFT,RIGHT, ALL, Tk
 from random import randint
 from PIL import Image, ImageTk
 
-
-#tko delas z fotografijami
-image = Image.open("lenna.jpg")
-photo = ImageTk.PhotoImage(image)
-
 class main:
 
-	def __init__ (self, master):
-		self.frame = Frame(master) #main frame
+	def __init__ (self):
+		self.app = Tk()
+		self.app.title('Tic Tac Toe')
+		#width and hight of window
+		w = 900
+		h = 1100
+		#width and hight of screen
+		ws = self.app.winfo_screenwidth()
+		hs = self.app.winfo_screenheight()
+		#calculate position
+		x = ws/2 - w/2
+		y = hs/2 - h/2
+		#place window -> pramaters(visina, dolzina, pozicija x, pozicija y)
+		self.app.geometry("%dx%d+%d+%d" % (w,h, x, y))
+		self.frame = Frame() #main frame
 		self.frame.pack(fill = 'both', expand = True)
 		self.label = Label(self.frame, text	= 'Tic Tac Toe', height = 6, bg = 'white', fg = 'blue')
 		self.label.pack(fill='both', expand = True)
@@ -125,21 +133,9 @@ class main:
 		self.canvas.unbind("<ButtonPress-1>")
 		self.e=True
 
+	def mainloop(self):
+		self.app.mainloop()
 
-root = Tk()
-root.title('Tic Tac Toe')
-app = main(root)		
-
-#width and hight of window
-w = 900
-h = 1100
-#width and hight of screen
-ws = root.winfo_screenwidth()
-hs = root.winfo_screenheight()
-#calculate position
-x = ws/2 - w/2
-y = hs/2 - h/2
-#place window -> pramaters(visina, dolzina, pozicija x, pozicija y)
-root.geometry("%dx%d+%d+%d" % (w,h, x, y))
-
-root.mainloop()
+		
+if __name__ == '__main__':
+  main().mainloop()
