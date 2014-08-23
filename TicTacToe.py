@@ -28,8 +28,10 @@ class main:
 		#======================================
 		self.frame = Frame() #main frame
 		self.frame.pack(fill = 'both', expand = True)
-		self.label = Label(self.frame, text	= 'Tic Tac Toe', height = 6, bg = 'white', fg = 'blue')
+		self.label = Label(self.frame, text	= 'Tic Tac Toe', height = 4, bg = 'white', fg = 'blue')
 		self.label.pack(fill='both', expand = True)
+		#self.label2 = Label(self.frame, text	= 'here', height = 2, bg = 'white', fg = 'blue') odkomentiri samo za develop-------------
+		#self.label2.pack(fill='both', expand = True)
 		self.canvas = Canvas(self.frame, width = 900, height = 900)
 		self.canvas.pack(fill = 'both', expand = True)
 		self.framepod = Frame(self.frame)#sub frame
@@ -90,6 +92,7 @@ class main:
 		self.draw()
 
 	def placeone(self, event):
+		player = 'X'
 		for i in range(0,900,300):
 			for j in range(0,900,300):
 				if event.x in range(i,i+300) and event.y in range(j, j+300):
@@ -101,24 +104,26 @@ class main:
 						self.canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
 						self.canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
 
-						player = 'X'
+						
 						player_move = x2 + 3*y2 #spremeni
 						self.board.make_move(player_move, player)
-						player = 'O'#self.board.get_enemy(player)
-
-						computer_move = self.board.determine(self.board, player)
-						self.board.make_move(computer_move, player)
-
-						ti = computer_move % 3
-						tj = computer_move / 3
-
-						x=(2*ti+300)/2
-						y=(2*tj+300)/2
-						self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+						
 		if self.board.complete():
 			self.label['text'] = (self.board.winner())
 			self.canvas.unbind("ButtonPress-1")
 			self.board = AI()
+		else:
+			player = self.board.get_enemy(player)
+			computer_move = self.board.determine(self.board, player)
+			self.board.make_move(computer_move, player)
+
+			ti = computer_move % 3
+			tj = computer_move / 3
+
+			x=(600*ti+300)/2
+			y=(600*tj+300)/2
+			#self.label2['text'] = str(computer_move) + '  ti ' + str(ti) + ' tj ' + str(tj) + ' y ' + str(y) + ' x ' +str(x)
+			self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
 
  
 
@@ -204,7 +209,7 @@ class AI(object):
 			return True
 		return False
 
-	#using in algorihm to easy check who winsd
+	#using in algorihm to easy check who wins
     def X_won(self):
 	    return self.winner() == 'X'
 
@@ -278,51 +283,6 @@ class AI(object):
 			elif val == a:
 				choices.append(move)
 		return random.choice(choices)
-		
-    '''def startsingle(self):
-    	main(root).label['text'] = ('tttthere')
-     	main(root).canvas.delete(ALL)
-        #main(root).label['text'] = ('Tic Tac Toe Game')
-        main(root).draw()
-        main(root).canvas.bind("<ButtonPress-1>", self.place1)
-
-    def place1(self, event):
-    	main(root).label['text'] = ('here')
-    	for i in range(0,900,300):
-			for j in range(0,900,300):
-				if event.x in range(i,i+300) and event.y in range(j, j+300):
-					if main(root).canvas.find_enclosed(i,j,i+300, j+300) == ():
-						x=(2*i+300)/2
-						y=(2*j+300)/2
-						x2=int(i/300)
-						y2=int(j/300)
-						main(root).canvas.create_line(x+60,y+60,x-60,y-60, width = 4, fill="red")
-						main(root).canvas.create_line(x-60,y+60,x+60,y-60, width = 4, fill="red")
-
-						player = 'X'
-						player_move = x + 3*y #spremeni
-						board.make_move(player_move, player)
-						player = get_enemy(player)
-
-						computer_move = determine(board, player)
-						board.make_move(computer_move, player)
-
-						ti = computer_move % 3
-						tj = computer_move / 3
-
-						x=(2*ti+300)/2
-						y=(2*tj+300)/2
-						main(root).canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
-	'''
-#board = AI()-------------------------
-
-
-'''root = Tk()
-root.title('Tic Tac Toe')
-app = main(root)'''		
-
-
-
  
 if __name__ == '__main__':
   main().mainloop()
