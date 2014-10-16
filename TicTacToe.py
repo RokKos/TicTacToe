@@ -90,6 +90,7 @@ class main:
 		self.label['text'] = ('Tic Tac Toe Game')
 		self.canvas.bind("<ButtonPress-1>", self.placeone)
 		self.draw()
+		self.board = AI()
 
 	def placeone(self, event):
 		player = 'X'
@@ -112,6 +113,10 @@ class main:
 			self.label['text'] = (self.board.winner())
 			self.canvas.unbind("ButtonPress-1")
 			self.board = AI()
+		elif self.board.winner() != None:
+			self.label['text'] = (self.board.winner())
+			self.canvas.unbind("ButtonPress-1")
+			self.board = AI()
 		else:
 			player = self.board.get_enemy(player)
 			computer_move = self.board.determine(self.board, player)
@@ -124,6 +129,11 @@ class main:
 			y=(600*tj+300)/2
 			#self.label2['text'] = str(computer_move) + '  ti ' + str(ti) + ' tj ' + str(tj) + ' y ' + str(y) + ' x ' +str(x)
 			self.canvas.create_oval(x+75,y+75,x-75,y-75, width = 4, outline="blue")
+			
+			if self.board.winner() != None:
+				self.label['text'] = (self.board.winner())
+				self.canvas.unbind("ButtonPress-1")
+				self.board = AI()
 
  
 
